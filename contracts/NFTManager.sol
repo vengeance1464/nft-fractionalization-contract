@@ -8,32 +8,50 @@ contract NFTManager is Ownable {
     RealEstateNFT[] public contracts;
     mapping(address => mapping(uint => address)) public userNftsMapping;
     mapping(uint256 => address) tokenNftMapping;
-    mapping(address => mapping(address => bool)) whiteListedAddresses;
+    mapping(address => bool) whiteListedAddresses; //make this array  mapping adress
     uint256 tokenCounter;
+    event NftCreate(address indexed _from, uint256 _id);
 
-    function createNFTContract(string name, string description, string tokenUri) public returns (MyNFT) {
-        RealEstateNFT nft = new RealEstateNFT(name, description);
+    function createNFTContract(
+        string memory name,
+        string memory symbol,
+        string memory description,
+        string memory tokenUri,
+        uint256 basePrice
+    ) public {
+        RealEstateNFT nft = new RealEstateNFT(name, symbol, description);
         tokenCounter++;
-        nft.createCollectible(tokenUri, basePrice, tokenCounter);
+        nft.createCollectible(tokenUri, basePrice, tokenCounter, msg.sender);
         userNftsMapping[msg.sender][tokenCounter] = address(nft);
         tokenNftMapping[tokenCounter] = msg.sender;
-        return address(nft);
+        emit NftCreate(msg.sender, tokenCounter);
     }
 
     function changeNftStatus(uint256 tokenId, bool nftStatus) public {
-        require(userNftsMapping[msg.sender][tokenId] == msg.sender, "You are not the owner");
-        RealEstateNFT(userNftsMapping[msg.sender][tokenId]).isListed(nftStatus);
+        require(tokenNftMapping[tokenId] == msg.sender, "You are not the owner");
+        RealEstateNFT(userNftsMapping[msg.sender][tokenId]).setListed(nftStatus);
     }
 
     function transferNft(uint256 _tokenId, address _recipient) public {
-        require(whiteListedAddresses[msg.sender][_recipient], "The recepient is not whitelisted by you");
-        RealEstateNFT(userNftsMapping[msg.sender][tokenId]).transferToken(_recipient, _tokenId);
+        require(whiteListedAddresses[_recipient], "The recepient is not whitelisted by you");
+        require(tokenNftMapping[_tokenId] == msg.sender, "you dont own this NFT");
+        RealEstateNFT(userNftsMapping[msg.sender][_tokenId]).transferToken(msg.sender, _recipient, _tokenId);
+        userNftsMapping[_recipient][_tokenId] = userNftsMapping[msg.sender][_tokenId];
+        tokenNftMapping[_tokenId] = _recipient;
+        delete userNftsMapping[msg.sender][_tokenId];
     }
 
-    function addWhitelistAddress(address _recepient) {
-        require(!whiteListedAddresses[msg.sender][_recepient], "You have already whitelisted  this address");
-        whiteListedAddresses[msg.sender][_recepient] = true;
+    function addWhitelistAddress(address _whitelistedAddress) public onlyOwner {
+        require(!whiteListedAddresses[_whitelistedAddress], "You have already whitelisted  this address");
+        whiteListedAddresses[_whitelistedAddress] = true;
     }
+
+    function removeWhitelistAddress(address _whitelistedAddress) public onlyOwner {
+        require(whiteListedAddresses[_whitelistedAddress], "This address s not whitelisted");
+        whiteListedAddresses[_whitelistedAddress] = false;
+    }
+
+    //API for reading NFT details and whitelisted addresses
 
     // function buyNFT(uint256 tokenId) payable {
     //     require(tokenId <= tokenCounter, "Token Id does not exists");

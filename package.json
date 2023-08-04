@@ -7,7 +7,8 @@
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
     "test:gas": "UPDATE_SNAPSHOT=1 yarn test --grep gas",
-    "clean": "rm -rf ./artifacts ./cache ./typechain "
+    "clean": "rm -rf ./artifacts ./cache ./typechain ",
+    "deploy": "npx hardhat run --network goerli ./scripts/deploy.ts "
   },
   "author": "amanusk",
   "license": "MIT",
@@ -36,6 +37,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.7.3",
+    "dotenv": "^16.3.1",
     "mocha-chai-jest-snapshot": "^1.1.4"
   }
 }
