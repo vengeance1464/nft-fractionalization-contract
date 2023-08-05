@@ -48,7 +48,13 @@ const config: HardhatUserConfig = {
       chainId: chainIds.hardhat,
     },
     mainnet: createTestnetConfig("mainnet"),
-    goerli: createTestnetConfig("goerli"),
+    goerli: {
+      url: `https://goerli.infura.io/v3/6683d3a4dd874bd29abc1371ecbf691f`,
+      accounts: [
+        `0xafe19e2287cc5d67726cb615a5af51f7a8d07844503c0e3c00746b7052bdf2bf`,
+        `0xc9cc01370abb4507d87193f48dbf7907f1e8daf1b2422e91440ace08e5567a34`,
+      ],
+    },
     kovan: createTestnetConfig("kovan"),
     rinkeby: createTestnetConfig("rinkeby"),
     ropsten: createTestnetConfig("ropsten"),
